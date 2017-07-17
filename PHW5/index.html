@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<meta charset="utf-8">
+
+<!-- Example based on http://bl.ocks.org/mbostock/3887118 -->
+<!-- Tooltip example from http://www.d3noob.org/2013/01/adding-tooltips-to-d3js-graph.html -->
+<!-- Coding style based on http://gist.github.com/mbostock/5977197 -->
+
+<style>
+    body {
+        font: 11px sans-serif;
+    }
+
+    .axis path,
+    .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .dot {stroke: #000;}
+    .bar {fill: #7fc97f;}
+
+    .tooltip {
+        position: absolute;
+        width: 200px;
+        height: 28px;
+        pointer-events: none;
+    }
+</style>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+    var margin2 = {top: 20, right: 20, bottom: 30, left: 40},
+        width2 = 960 - margin2.left - margin2.right,
+        height2 = 500 - margin2.top - margin2.bottom;
+
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+    /*
+     * value accessor - returns the value to encode for a given data object.
+     * scale - maps value to a visual display encoding, such as a pixel position.
+     * map function - maps from data value to display value
+     * axis - sets up axis
+     */
+    var svg2 = d3.select("body").append("svg")
+        .attr("width", width2 + margin2.left + margin2.right)
+        .attr("height", height2 + margin2.top + margin2.bottom)
+        .append("g")
+        .attr("transform",
+            "translate(" + margin2.left + "," + margin2.top + ")");
+    //bar graph vars
+    var yScaleBar = d3.scale.linear().range([height2, 0]);
+    var xScaleBar = d3.scale.ordinal().rangeRoundBands([0, width2], 0.1);
+
+    var circleSize = function(d) {return d["Serving Size Weight"] * 6;};
+
+    // setup x
+    var xValue = function(d) { return d.Sugars;}, // data -> value
+        xScale = d3.scale.linear().range([0, width]), // value -> display
+        xMap = function(d) { return xScale(xValue(d));}, // data -> display
+        xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+    // setup y
+    var yValue = function(d) { return d.Calories;}, // data -> value
+        yScale = d3.scale.linear().range([height, 0]), // value -> display
+        yMap = function(d) { return yScale(yValue(d));}, // data -> display
+        yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+    // setup fill color
+    var cValue = function(d) { return d.Manufacturer;},
+        color = d3.scale.category10();
+
+    // add the graph canvas to the body of the webpage
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    // add the tooltip area to the webpage
+    var tooltip = d3.select("body").append("div")
+        .attr("class", "tooltip")
+        .style("opacity", 0);
+
+    // load data
+    d3.csv("cereals.csv", function(error, data) {
+        data= data.filter(function(d){return d.Calories >=0 && d.Sugars >=0});
+        // change string (from CSV) into number format
+        data.forEach(function(d) {
+            d.Calories = +d.Calories;
+            d.Sugars = +d.Sugars;
+//    console.log(d);
+        });
+        var dataBar = d3.nest()
+            .key(function(d) {
+                return d.Manufacturer;
+            })
+            .rollup(function(c) {
+                return d3.mean(c, function(d) {
+                    return d.Calories;
+                })
+            })
+            .entries(data);
+
+        dataBar.forEach(function(d) {
+            d.Manufacturer = d.key;
+            d.Calories = d.values;
+        });
+        // don't want dots overlapping axis, so add in buffer to data domain
+        xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+        yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+
+        xScaleBar.domain(dataBar.map(function(d) { return d.Manufacturer; }));
+        yScaleBar.domain([0, d3.max(dataBar, function(d) { return d.Calories; })]);
+
+        var yAxisBar = d3.svg.axis().scale(yScaleBar).orient("left");
+        var xAxisBar = d3.svg.axis().scale(xScaleBar);
+
+        svg2.append('g')
+            .attr('class', 'x axis')
+            .attr("transform", "translate(0," + height2 + ")")
+            .attr("x", width2)
+            .call(xAxisBar);
+        svg2.append('g')
+            .attr('class', 'y axis')
+            .attr("y", height2)
+            .call(yAxisBar);
+
+        svg2.append('g')
+            .selectAll(".bar")
+            .data(dataBar)
+            .enter().append("rect")
+            .attr("class", "bar")
+            .attr("x", function(d) { return xScaleBar(d.Manufacturer); })
+            .attr("width", xScaleBar.rangeBand())
+            .attr("y", function(d) { return yScaleBar(d.Calories); })
+            .attr("height", function(d) { return height2-yScaleBar(d.Calories); })
+            .on("click", function(d) {
+                svg.selectAll('.dot')
+                    .filter(function (c) {
+                        return d.Manufacturer == c.Manufacturer;
+                    })
+                    .transition()
+                    .duration(650)
+                    .delay(50)
+                    .style("opacity", 1);
+                svg.selectAll('.dot')
+                    .filter(function (c) {
+                        return d.Manufacturer != c.Manufacturer;
+                    })
+                    .transition()
+                    .duration(650)
+                    .delay(50)
+                    .style("opacity", .25);
+            });
+        // x-axis
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .attr('fill', 'black')
+            .call(xAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("x", width)
+            .attr("y", -6)
+            .style("text-anchor", "end")
+            .text("Sugars");
+
+        // y-axis
+        svg.append("g")
+            .attr("class", "y axis")
+            .attr('fill', 'black')
+            .call(yAxis)
+            .append("text")
+            .attr("class", "label")
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", ".71em")
+            .style("text-anchor", "end")
+            .text("Calories");
+
+        // draw dots
+        svg.selectAll(".dot")
+            .data(data)
+            .enter().append("circle")
+            .attr("class", "dot")
+            .attr("r", circleSize)
+            .attr("cx", xMap)
+            .attr("cy", yMap)
+            .style("fill", function(d) { return color(cValue(d));})
+            .on("mouseover", function(d) {
+                tooltip.transition()
+                    .duration(200)
+                    .style("opacity", .9);
+                tooltip.html(d["Cereal Name"] + "<br/> (Sugars:" + xValue(d)
+                    + ", Calories: " + yValue(d) + ")")
+                    .style("left", (d3.event.pageX + 5) + "px")
+                    .style("top", (d3.event.pageY - 28) + "px");
+            })
+            .on("mouseout", function(d) {
+                tooltip.transition()
+                    .duration(500)
+                    .style("opacity", 0);
+            })
+            .on("click", function(d) {
+                svg2.selectAll('.bar')
+                    .filter(function(c) {return d.Calories < c.Calories;})
+                    .transition()
+                    .duration(650)
+                    .delay(50)
+                    .style("fill", "#beaed4");
+
+
+                svg2.selectAll('.bar')
+                    .filter(function(c) {return d.Calories >= c.Calories;})
+                    .transition()
+                    .duration(650)
+                    .delay(50)
+                    .style("fill", "#7fc97f");
+
+
+            });
+
+        // draw legend
+        var legend = svg.selectAll(".legend")
+            .data(color.domain())
+            .enter().append("g")
+            .attr("class", "legend")
+            .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+        // draw legend colored rectangles
+        legend.append("rect")
+            .attr("x", width - 18)
+            .attr("width", 18)
+            .attr("height", 18)
+            .style("fill", color);
+
+        // draw legend text
+        legend.append("text")
+            .attr("x", width - 24)
+            .attr("y", 9)
+            .attr("dy", ".35em")
+            .style("text-anchor", "end")
+            .text(function(d) { return d;})
+    });
+
+</script>
+</body>
+</html>

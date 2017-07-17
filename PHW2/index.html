@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style> /* set the CSS */
+/*sets the background color*/
+.bcolor { background-color: #cfcfcf }
+</style>
+<body>
+
+<!-- load the d3.js library -->
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script>
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 20, right: 20, bottom: 30, left: 40},
+        width = 960 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+    // set the ranges
+    var x = d3.scaleBand()
+        .range([0, width])
+        .padding(0.1);
+    var y = d3.scaleLinear()
+        .range([height, 0]);
+
+    // append the svg object to the body of the page
+    // append a 'group' element to 'svg'
+    // moves the 'group' element to the top left margin
+    var svg = d3.select("body").append("svg")
+        .attr("width",  width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("class", "bcolor")
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    // get the data
+    d3.csv("State-GPA.csv", function(error, data) {
+        if (error) throw error;
+
+        // format the data
+        data.forEach(function(d) {
+            d.AverageGPA = +d.AverageGPA;
+        });
+
+        // Scale the range of the data in the domains
+        x.domain(data.map(function(d) { return d.State; }));
+        y.domain([0, d3.max(data, function(d) { return d.AverageGPA; })]);
+
+        // append the rectangles for the bar chart
+        svg.selectAll(".bar")
+            .data(data)
+            .enter().append("rect")  ////took out .append("rect")
+            .attr("class", "bar")
+            //colors the bars
+            .style("fill", function(d){
+                if (d.AverageGPA<1) { return "red" }
+                else if (d.AverageGPA>=1 && d.AverageGPA<2) { return "organge"}
+                else if (d.AverageGPA>=2 && d.AverageGPA<3) { return "yellow"}
+                else if (d.AverageGPA>=3 && d.AverageGPA<4) { return "blue"}
+                else if (d.AverageGPA>=4) { return "gold"}
+                else { return "white"}
+            })
+            //adds the black border
+            .style("stroke", function(d) {return "black"})
+            .attr("x", function(d) { return x(d.State); })
+            .attr("width", x.bandwidth())
+            .attr("y", function(d) { return y(d.AverageGPA); })
+            .attr("height", function(d) { return height - y(d.AverageGPA); });
+
+        //adds label values to the bars
+        svg.selectAll(".labels")
+            .data(data)
+            .enter().append("text")
+            .attr("class", "labels")
+            .attr("text-anchor", "middle")
+            .style("fill", function(d){
+                if (d.AverageGPA<1) { return "white" }
+                else if (d.AverageGPA>=1 && d.AverageGPA<2) { return "black"}
+                else if (d.AverageGPA>=2 && d.AverageGPA<3) { return "black"}
+                else if (d.AverageGPA>=3 && d.AverageGPA<4) { return "gold"}
+                else if (d.AverageGPA>=4) { return "black"}
+                else { return "white"}
+            })
+            .attr("x", function(d) { return x(d.State) + x.bandwidth()/2; })
+            .attr("y", function(d) { return y(d.AverageGPA)+20; })
+            .text(function(d) { return d.AverageGPA; });
+
+
+
+
+        // add the x Axis
+        svg.append("g")
+            .attr("transform", "translate(0," + height + ")")
+            .call(d3.axisBottom(x));
+        /*
+        // add the y Axis
+        //hidden
+        svg.append("g")
+            .call(d3.axisLeft(y));
+        */
+
+    })
+
+</script>
+</body>

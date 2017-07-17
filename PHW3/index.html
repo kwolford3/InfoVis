@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>D3 is awesome</title>
+	<!-- Always include D3 first. -->
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<!-- Include main.js, which is where all our code lives -->
+	<script src="main.js"></script>
+	<!-- Include any styles we want to add to our page -->
+	<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+	<h1 id="demo">Letter Frequency</h1>
+	<!-- Our graph will be added inside this divider element -->
+	<!--sets dropdown with 3 color options and text field for value cutoff-->
+	<select name = "colors" id="color">
+		<option value="green">Green</option>
+		<option value="red">Red</option>
+		<option value="yellow">Yellow</option>
+	</select>
+	<br><br>
+	Cutoff Value <input type="text" name="cutoff" id="cutoff"><br>
+	<br>
+	<div id="graph"></div>
+
+</body>
+</html>
