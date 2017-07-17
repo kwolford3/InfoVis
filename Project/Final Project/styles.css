@@ -1,0 +1,116 @@
+body {
+	font: 14px sans-serif;
+	font-weight: 400;
+	background-image: url("background-image.jpg");;
+	color: #000000;
+	font-family: 'Montserrat', sans-serif;
+}
+h1 { color: #00004c;
+    font-family: "Great Vibes";
+    font-size: 40px;
+    font-weight: 300;
+    padding: 0;
+    text-transform: uppercase;
+    text-align: center;
+    text-shadow: 0 1px 1px #fff;
+}
+
+label{
+    margin-left: 250px;
+    font-family: "Great Vibes";
+}
+
+.container {
+    margin-left: 20px;
+    float: left;
+}
+#scatter{
+    margin-bottom:10px;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 25px;
+    background-color: #F8F8FF;
+}
+#barchart{
+    background-color: #F8F8FF;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 25px;
+
+}
+
+#label{
+    text-align:center;
+    margin-top:10px;
+}
+.bar {
+  fill: #00004c;
+  visibility: visible;
+}
+.bar:hover {
+  fill: brown;
+}
+.arc text {
+    font: 10px sans-serif;
+    text-anchor: middle;
+}
+
+.arc path {
+    stroke: #fff;
+}
+.axis {
+  font: 10px sans-serif;
+}
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+.states {
+    fill: #A9A9A9;
+    stroke: #fff;
+    stroke-width:2px;
+}
+.states:hover {
+    fill: #00004c;
+}
+
+/*These below are for the possiblity of
+	changing the hover over color*/
+.red-state:hover {
+    fill: red;
+}
+
+.default-state:hover {
+    fill: #e5e5e5;
+}
+
+.blue-state:hover {
+    fill: blue;
+}
+.dot {
+  stroke: #000;
+}
+
+/*.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}*/
+
+.tooltip {
+	background: #fff;
+	color: #000;
+	border-radius: 5px;
+	position: absolute;
+	padding: 10px;
+	pointer-events: none;
+	text-align: left;
+	opacity: .25;
+}
+
+
+
+
